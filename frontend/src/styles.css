@@ -1,0 +1,435 @@
+* {
+  box-sizing: border-box;
+}
+html {
+  font-size: 16x;
+}
+body {
+  font-family: "Open Sans", sans-serif;
+  color: #666;
+  margin: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Header */
+.price-list {
+  margin-top: 100px;
+  width: 100%;
+  margin-right: 20px;
+}
+
+nav {
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  padding: 10px;
+  height: 100px;
+  width: 100%;
+  margin-bottom: 100px;
+  z-index: 1;
+}
+.profile {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  color: white;
+  margin-left: 70px;
+  margin-right: 20px;
+}
+.avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%; /* Makes the image circular */
+  overflow: hidden; /* Ensures image fits within circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-name {
+  margin-left: 20px;
+}
+.status {
+  position: absolute;
+  border-radius: 50%;
+  border: solid white;
+  background-color: green;
+  width: 12px;
+  height: 12px;
+  margin-left: 50px;
+  margin-top: 50px;
+}
+.flag {
+  display: flex;
+  gap: 10px;
+  color: white;
+  margin-right: 50px;
+}
+.flag img {
+  border-radius: 15%;
+  width: 50px;
+  height: 35px;
+}
+.flag p {
+  margin-right: 10px;
+}
+
+/* Sidebar */
+
+.menu {
+  padding-left: 20px;
+  position: relative;
+  height: 100%;
+  width: 240px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 100px;
+  margin-right: 35px;
+  background-color: whitesmoke;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.menu div {
+  margin-left: 10px;
+}
+
+.menu h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+.line {
+  height: 2px;
+  width: 10rem;
+  background-color: #007bff;
+}
+
+.menu-item {
+  width: 11rem;
+  height: 40px;
+  padding: 10px;
+  font-size: 0.9rem;
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.menu-item:hover {
+  background-color: #007bff;
+  color: whitesmoke;
+}
+.menu-item svg {
+  flex-shrink: 0;
+}
+
+/* pricelist */
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 400px;
+}
+.search-bar input {
+  border-radius: 30px;
+}
+.buttons-container {
+  display: flex;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.add-price {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 20px;
+}
+
+.table {
+  border-radius: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-right: 20px;
+  margin-top: 20px;
+}
+
+.table th,
+.table td {
+  width: 100px;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background: #007bff;
+  color: white;
+}
+
+.table tr:hover {
+  background: #288efcf9;
+  color: whitesmoke;
+}
+.buttons {
+  background-color: #ddd;
+  height: 2.5rem;
+  margin-right: 1rem;
+  align-items: center;
+  display: flex;
+  padding: 2px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.buttons span {
+  height: 80%;
+  padding-top: 5px;
+  size: 50px;
+  width: 50px;
+}
+.buttons:hover {
+  background: #0056b3;
+  color: white;
+  cursor: pointer;
+}
+.descr {
+  margin-left: 1rem;
+  color: #666;
+  background-color: transparent;
+  font-size: 2rem;
+  height: 1px;
+  position: relative;
+  /* right: auto;
+  left: auto;
+  bottom: auto;
+  top: auto; */
+}
+.descr:hover {
+  cursor: pointer;
+  color: black;
+  border-color: black;
+}
+
+.description-text {
+  width: 20rem;
+  text-decoration: none;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-right: 8px;
+  background-color: #666;
+  height: 100%;
+}
+
+.input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.btn {
+  background-color: transparent;
+}
+
+.product-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.no-items {
+  text-align: center;
+  color: #666;
+}
+.submit {
+  background-color: #5ba8f9;
+}
+.submit:hover {
+  background-color: #007bff;
+  color: white;
+}
+.cancel {
+  background-color: #ddd;
+}
+.cancel:hover {
+  background-color: #007bff;
+  color: white;
+}
+.error {
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.hamburger {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 0.7rem;
+  }
+  .input-group {
+    flex-direction: column;
+    justify-content: center;
+  }
+  .input {
+    font-size: 1rem;
+  }
+  .menu {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+  .btn {
+    margin: 1rem;
+  }
+  .add-price {
+    margin: 1rem;
+  }
+  .profile {
+    display: none;
+  }
+  .flag {
+    margin-right: 0;
+  }
+  .search-bar {
+    margin-left: 1rem;
+  }
+  html {
+    font-size: 10x;
+  }
+  .submit-cancel {
+    display: flex;
+    flex-direction: row;
+  }
+  .buttons {
+    height: 4rem;
+  }
+  .buttons a {
+    display: none;
+  }
+  .buttons-container {
+    justify-content: space-evenly;
+    margin: 1rem;
+  }
+  .buttons span {
+    margin-left: 25px;
+  }
+  .table {
+    width: 576px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  html {
+    font-size: 0.9;
+  }
+  .input-group {
+    flex-direction: column;
+    justify-content: center;
+  }
+  .menu {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+  .btn {
+    margin: 1rem;
+  }
+  .add-price {
+    margin: 1rem;
+  }
+  .profile {
+    display: none;
+  }
+  .flag {
+    margin-right: 0;
+  }
+  .search-bar {
+    margin-left: 1rem;
+  }
+  html {
+    font-size: 10x;
+  }
+  .submit-cancel {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .buttons a {
+    display: none;
+  }
+  .buttons-container {
+    justify-content: space-between;
+    margin: 1rem;
+  }
+  .buttons span {
+    margin-left: 25px;
+  }
+  .table {
+    width: 576px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1270px) {
+  .buttons-container {
+    /* margin-right: 200px; */
+    justify-content: start;
+  }
+  .buttons a {
+    display: none;
+  }
+  html {
+    font-size: 16x;
+  }
+}
