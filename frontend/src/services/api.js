@@ -10,7 +10,9 @@ const api = axios.create({
 
 export const getProducts = async () => {
   try {
-    const response = await api.get("/products");
+    const response = await api.get("/products", {
+      maxRedirects: 5,
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || "Failed to fetch products");
@@ -19,7 +21,7 @@ export const getProducts = async () => {
 
 export const createProduct = async (data) => {
   try {
-    const response = await api.post("/products", data);
+    const response = await api.post("/products", data, { maxRedirects: 5 });
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || "Failed to create product");
