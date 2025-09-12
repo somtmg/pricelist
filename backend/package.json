@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js --omit=dev"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",
