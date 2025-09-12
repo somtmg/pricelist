@@ -3,7 +3,7 @@ import { getProducts, createProduct } from "./services/api";
 import "./styles.css";
 import Header from "./components/Header";
 import SideBar from "./components/Sidebar";
-import { Plus, Printer, Sliders } from "lucide-react";
+import { SearchIcon, Plus, Printer, Sliders } from "lucide-react";
 
 function App() {
   const [items, setItems] = useState([]);
@@ -16,13 +16,24 @@ function App() {
     in_price: "",
     price: "",
     unit: "",
-    in_stock: 0,
+    in_stock: "",
     description: "",
   });
   const [error, setError] = useState(null);
   const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
+  const [visibleColumns, setVisibleColumns] = useState([
+    "article_no",
+    "product_name",
+    "in_price",
+    "price",
+    "unit",
+    "in_stock",
+    "description",
+  ]);
+  const [editCell, setEditCell] = useState({ rowIndex: null, column: null });
+  const [selectedRow, setSelectedRow] = useState(null);
 
-  // Fetch products on mount
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -57,7 +68,7 @@ function App() {
     const { name, value } = e.target;
     setNewProduct((prev) => ({
       ...prev,
-      [name]: name === "in_stock" ? parseInt(value, 10) || 0 : value,
+      [name]: value,
     }));
   };
 
@@ -81,7 +92,7 @@ function App() {
         in_price: "",
         price: "",
         unit: "",
-        in_stock: 0,
+        in_stock: "",
         description: "",
       });
       setShowInput(false);
@@ -98,10 +109,104 @@ function App() {
     }
   };
 
-  //show full description
-  const toggleDescription = (id) => {
-    setExpandedDescriptionId(expandedDescriptionId === id ? null : id);
+  // Handle cell click for editing
+  const handleCellClick = (rowIndex, column) => {
+    setEditCell({ rowIndex, column });
   };
+
+  // Handle cell value change
+  const handleCellChange = (e, rowIndex, column) => {
+    const newData = [...items];
+    newData[rowIndex][column] = e.target.value;
+    setItems(newData);
+  };
+
+  // Handle blur or Enter to save changes
+  const handleBlurOrEnter = async (e, rowIndex, column) => {
+    if (e.type === "blur" || e.key === "Enter") {
+      setEditCell({ rowIndex: null, column: null });
+      try {
+        const product = items[rowIndex];
+        await fetch(`http://localhost:3000/products/${product.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            article_no: product.article_no,
+            product_name: product.product_name,
+            in_price: product.in_price,
+            price: product.price,
+            unit: product.unit,
+            in_stock: product.in_stock,
+            description: product.description,
+          }),
+        });
+      } catch (error) {
+        console.error("Error updating data:", error);
+      }
+    }
+  };
+
+  // Show full row 
+  const handleShowFullRow = (row) => {
+    setSelectedRow(row);
+  };
+
+  const mapColumnNames = {
+    article_no: "articleNo",
+    product_name: "product",
+    in_price: "inPrice",
+    price: "price",
+    unit: "unit",
+    in_stock: "inStock",
+    description: "description",
+  };
+
+  // Determine input type based on column
+  const getInputType = (column) => {
+    switch (column) {
+      case "in_price":
+      case "price":
+      case "in_stock":
+        return "number";
+      case "description":
+        return "textarea";
+      default:
+        return "text";
+    }
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      let colsToShow = [
+        "article_no",
+        "product_name",
+        "in_price",
+        "price",
+        "unit",
+        "in_stock",
+        "description",
+      ];
+      const removeColumns = (originalArray, indicesToRemove) => {
+        return originalArray.filter(
+          (_, index) => !indicesToRemove.includes(index)
+        );
+      };
+
+      if (width < 1200) {
+        colsToShow = removeColumns(colsToShow, [2, 6]);
+      }
+      if (width < 1024) {
+        colsToShow = removeColumns(colsToShow, [0, 3, 4]);
+      }
+
+      setVisibleColumns(colsToShow);
+    };
+
+    handleResize(); 
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <>
@@ -112,42 +217,46 @@ function App() {
           {error && <div className="error">{error}</div>}
           <div className="input-group">
             <div className="search-bar">
-              <input
-                className="input"
-                type="text"
-                placeholder="Search by Product ID"
-                value={searchId}
-                onChange={(e) => setSearchId(e.target.value)}
-              />
-              <input
-                className="input"
-                type="text"
-                placeholder="Search by Product Name"
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-              />
+              <div className="search-container">
+                <input
+                  className="search-input"
+                  type="text"
+                  placeholder="Search by Product ID"
+                  value={searchId}
+                  onChange={(e) => setSearchId(e.target.value)}
+                />
+                <i className="search-icon">
+                  <SearchIcon color="#007bff" />
+                </i>
+              </div>
+              <div className="search-container">
+                <input
+                  className="search-input"
+                  type="text"
+                  placeholder="Search by Product Name"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                />
+                <i className="search-icon">
+                  <SearchIcon color="#007bff" />
+                </i>
+              </div>
             </div>
             <div className="buttons-container">
               <div className="buttons">
-                <a className="btn" onClick={handleAddItemClick}>
-                  Add Product
-                </a>
+                <a onClick={handleAddItemClick}>New Product</a>
                 <span>
                   <Plus color="green" size={20} onClick={handleAddItemClick} />
                 </span>
               </div>
               <div className="buttons">
-                <a className="btn" onClick={handleAddItemClick}>
-                  Print List
-                </a>
+                <a onClick={handleAddItemClick}>Print List</a>
                 <span>
                   <Printer color="green" size={20} />
                 </span>
               </div>
               <div className="buttons">
-                <a className="btn" onClick={handleAddItemClick}>
-                  Advanced Mode
-                </a>
+                <a onClick={handleAddItemClick}>Advanced Mode</a>
                 <span>
                   <Sliders color="green" size={20} />
                 </span>
@@ -157,7 +266,7 @@ function App() {
           {showInput && (
             <div className="add-price">
               <input
-                className="input"
+                className="product-input"
                 type="text"
                 name="article_no"
                 placeholder="Article No"
@@ -167,7 +276,7 @@ function App() {
                 required
               />
               <input
-                className="input"
+                className="product-input"
                 type="text"
                 name="product_name"
                 placeholder="Product Name"
@@ -177,7 +286,7 @@ function App() {
                 required
               />
               <input
-                className="input"
+                className="product-input"
                 type="number"
                 name="in_price"
                 placeholder="In Price"
@@ -187,7 +296,7 @@ function App() {
                 required
               />
               <input
-                className="input"
+                className="product-input"
                 type="number"
                 name="price"
                 placeholder="Price"
@@ -196,9 +305,8 @@ function App() {
                 step="0.01"
                 required
               />
-
               <input
-                className="input"
+                className="product-input"
                 type="text"
                 name="unit"
                 placeholder="Unit"
@@ -207,7 +315,7 @@ function App() {
                 required
               />
               <input
-                className="input"
+                className="product-input"
                 type="number"
                 name="in_stock"
                 placeholder="In Stock"
@@ -215,9 +323,8 @@ function App() {
                 onChange={handleInputChange}
                 required
               />
-
               <textarea
-                className="input"
+                className="product-input"
                 name="description"
                 placeholder="Description"
                 value={newProduct.description}
@@ -225,7 +332,6 @@ function App() {
                 required
               />
               <div className="submit-cancel">
-                {" "}
                 <button className="btn submit" onClick={handleAddItemSubmit}>
                   Submit
                 </button>
@@ -239,58 +345,129 @@ function App() {
             </div>
           )}
 
-          <table className="table">
-            <thead>
-              <tr>
-                {/* <th>ID</th> */}
-                <th>Article No.</th>
-                <th>Product/Service</th>
-                <th>In Price</th>
-                <th>Price</th>
-                <th>Unit</th>
-                <th>In Stock</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredItems.map((item) => (
-                <>
-                  <tr key={item.id}>
-                    {/* <td>{item.id}</td> */}
-                    <td>{item.article_no}</td>
-                    <td>{item.product_name}</td>
-                    <td>{item.in_price}</td>
-                    <td>{item.price}</td>
-                    <td>{item.unit}</td>
-                    <td>{item.in_stock}</td>
-                    <td className="description-cell">
-                      <span className="description-text">
-                        {item.description && item.description.length > 50
-                          ? `${item.description.substring(0, 70)}`
-                          : item.description || "N/A"}
-                      </span>
-                      {item.description && item.description.length > 50 && (
-                        <a
-                          className="descr"
-                          onClick={() => toggleDescription(item.id)}
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  {visibleColumns.map((col) => (
+                    <th key={col}>
+                      {col.charAt(0).toUpperCase() +
+                        col.slice(1).replace(/([A-Z])/g, " $1")}
+                    </th>
+                  ))}
+                  {visibleColumns.length < 7 && <th></th>}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.map((row, rowIndex) => (
+                  <tr key={row.id}>
+                    {visibleColumns.map((col) => (
+                      <td
+                        key={col}
+                        onClick={() =>
+                          handleCellClick(rowIndex, mapColumnNames[col])
+                        }
+                      >
+                        {editCell.rowIndex === rowIndex &&
+                        editCell.column === mapColumnNames[col] ? (
+                          getInputType(col) === "textarea" ? (
+                            <textarea
+                              className="edit-input"
+                              value={items[rowIndex][mapColumnNames[col]] || ""}
+                              onChange={(e) =>
+                                handleCellChange(
+                                  e,
+                                  rowIndex,
+                                  mapColumnNames[col]
+                                )
+                              }
+                              onBlur={(e) =>
+                                handleBlurOrEnter(
+                                  e,
+                                  rowIndex,
+                                  mapColumnNames[col]
+                                )
+                              }
+                              onKeyPress={(e) =>
+                                handleBlurOrEnter(
+                                  e,
+                                  rowIndex,
+                                  mapColumnNames[col]
+                                )
+                              }
+                              autoFocus
+                            />
+                          ) : (
+                            <input
+                              className="edit-input"
+                              type={getInputType(col)}
+                              value={items[rowIndex][mapColumnNames[col]] || ""}
+                              onChange={(e) =>
+                                handleCellChange(
+                                  e,
+                                  rowIndex,
+                                  mapColumnNames[col]
+                                )
+                              }
+                              onBlur={(e) =>
+                                handleBlurOrEnter(
+                                  e,
+                                  rowIndex,
+                                  mapColumnNames[col]
+                                )
+                              }
+                              onKeyPress={(e) =>
+                                handleBlurOrEnter(
+                                  e,
+                                  rowIndex,
+                                  mapColumnNames[col]
+                                )
+                              }
+                              step={
+                                col === "in_price" || col === "price"
+                                  ? "0.01"
+                                  : undefined
+                              }
+                              autoFocus
+                            />
+                          )
+                        ) : (
+                          row[col]
+                        )}
+                      </td>
+                    ))}
+                    {visibleColumns.length < 7 && (
+
+                      <td className="show-row-btn-cell">
+                        <button
+                          className="show-row-btn"
+                          onClick={() => handleShowFullRow(items[rowIndex])}
                         >
                           ...
-                        </a>
-                      )}
-                      {expandedDescriptionId === item.id && (
-                        <>
-                          <td>
-                            {item.description.substring(71, 140)}
-                            {item.description.substring(141, 210)}
-                          </td>
-                        </>
-                      )}
-                    </td>
+                        </button>
+                      </td>
+                    )}
                   </tr>
-                </>
-              ))}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+            {selectedRow && (
+              <div className="modal">
+                <div className="modal-content">
+                  <h2>Selected Row</h2>
+                  <p>Article No: {selectedRow.article_no}</p>
+                  <p>Product/Service: {selectedRow.product_name}</p>
+                  <p>In Price: {selectedRow.in_price}</p>
+                  <p>Price: {selectedRow.price}</p>
+                  <p>Unit: {selectedRow.unit}</p>
+                  <p>In Stock: {selectedRow.in_stock}</p>
+                  <p>Description: {selectedRow.description}</p>
+                  <button onClick={() => setSelectedRow(null)}>Close</button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {filteredItems.length === 0 && (
             <p className="no-items">No products found.</p>
           )}

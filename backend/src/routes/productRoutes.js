@@ -1,6 +1,7 @@
 import {
   getAllProducts,
   createProduct,
+  editProduct,
 } from "../controllers/productController.js";
 
 const productSchema = {
@@ -28,7 +29,7 @@ const productSchema = {
 
 const productRoutes = async (fastify) => {
   fastify.get("/products", getAllProducts);
-
+  fastify.put("/products/:id", editProduct);
   fastify.post("/products", { schema: productSchema }, createProduct);
 };
 

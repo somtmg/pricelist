@@ -18,4 +18,19 @@ const createProduct = async (request, reply) => {
   }
 };
 
-export { getAllProducts, createProduct };
+const editProduct = async (request, reply) => {
+  try {
+    const { id } = request.params;
+    const updates = request.body;
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return reply.status(404).send({ error: "Product not found" });
+    }
+    await product.update(updates);
+    return product;
+  } catch (error) {
+    return reply.code(400).send({ error: error.message });
+  }
+};
+
+export { getAllProducts, createProduct, editProduct };

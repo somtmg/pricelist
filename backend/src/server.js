@@ -10,6 +10,7 @@ const fastify = Fastify({ logger: false });
 
 fastify.register(cors, {
   origin: process.env.CORS_ORIGIN,
+  // origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "DELETE"],
 });
 const PORT = process.env.PORT || 3000;
@@ -40,7 +41,7 @@ const start = async () => {
       process.env.NODE_ENV !== "production" ||
       process.env.SEED_DATABASE === "true"
     ) {
-      await seedDatabase(); 
+      await seedDatabase();
     } else {
       fastify.log.info("Skipping seeding in production.");
     }
@@ -48,6 +49,8 @@ const start = async () => {
     await fastify.listen({ port: PORT, host: "0.0.0.0" });
     fastify.log.info(`Server listening on http://localhost:${PORT}`);
   } catch (error) {
+    console.log(error);
+
     fastify.log.error(error);
     process.exit(1);
   }
