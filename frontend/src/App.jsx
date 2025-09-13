@@ -106,13 +106,6 @@ function App() {
     }
   };
 
-  // Handle Enter key for submit
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleAddItemSubmit();
-    }
-  };
-
   // Handle cell click for editing
   const handleCellClick = (rowIndex, column) => {
     setEditCell({ rowIndex, column });
@@ -156,15 +149,15 @@ function App() {
       case "product_name":
         return "textarea";
       case "in_price":
-        return "number";
+        return "text";
       case "unit":
         return "text";
       case "article_no":
         return "text";
       case "price":
-        return "number";
+        return "text";
       case "in_stock":
-        return "number";
+        return "text";
       case "description":
         return "textarea";
       default:
