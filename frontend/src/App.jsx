@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getProducts, createProduct } from "./services/api";
+import { ProductService } from "./services/api";
 import "./styles.css";
 import Header from "./components/Header";
 import SideBar from "./components/Sidebar";
@@ -20,7 +20,6 @@ function App() {
     description: "",
   });
   const [error, setError] = useState(null);
-  const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
   const [visibleColumns, setVisibleColumns] = useState([
     "article_no",
     "product_name",
@@ -37,7 +36,7 @@ function App() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts();
+        const data = await ProductService.getProducts();
         setItems(data);
       } catch (err) {
         setError(err.message);
@@ -50,11 +49,16 @@ function App() {
   const filteredItems = items.filter((item) => {
     const matchesId =
       searchId === "" ||
-      item.article_no.toString().toLowerCase().includes(searchId) ||
-      item.article_no.toString().includes(searchId);
+      (item.article_no &&
+        item.article_no
+          .toString()
+          .toLowerCase()
+          .includes(searchId.toLowerCase())) ||
+      (item.article_no && item.article_no.toString().includes(searchId));
     const matchesName =
       searchName === "" ||
-      item.product_name.toLowerCase().includes(searchName.toLowerCase());
+      (item.product_name &&
+        item.product_name.toLowerCase().includes(searchName.toLowerCase()));
     return matchesId && matchesName;
   });
 
@@ -84,7 +88,7 @@ function App() {
       return;
     }
     try {
-      const createdProduct = await createProduct(newProduct);
+      const createdProduct = await ProductService.createProduct(newProduct);
       setItems([...items, createdProduct]);
       setNewProduct({
         article_no: "",
@@ -122,56 +126,49 @@ function App() {
   };
 
   // Handle blur or Enter to save changes
-  const handleBlurOrEnter = async (e, rowIndex, column) => {
+  const handleBlurOrEnter = async (e, rowIndex) => {
     if (e.type === "blur" || e.key === "Enter") {
       setEditCell({ rowIndex: null, column: null });
       try {
         const product = items[rowIndex];
-        await fetch(`http://localhost:3000/products/${product.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            article_no: product.article_no,
-            product_name: product.product_name,
-            in_price: product.in_price,
-            price: product.price,
-            unit: product.unit,
-            in_stock: product.in_stock,
-            description: product.description,
-          }),
-        });
+        const updatedProduct = await ProductService.updateProduct(
+          product.id,
+          product
+        );
+        const newData = [...items];
+        newData[rowIndex] = updatedProduct;
+        setItems(newData);
       } catch (error) {
         console.error("Error updating data:", error);
+        setError("Failed to update product. Please try again.");
       }
     }
   };
 
-  // Show full row 
+  // Show full row
   const handleShowFullRow = (row) => {
     setSelectedRow(row);
-  };
-
-  const mapColumnNames = {
-    article_no: "articleNo",
-    product_name: "product",
-    in_price: "inPrice",
-    price: "price",
-    unit: "unit",
-    in_stock: "inStock",
-    description: "description",
   };
 
   // Determine input type based on column
   const getInputType = (column) => {
     switch (column) {
+      case "product_name":
+        return "textarea";
       case "in_price":
+        return "number";
+      case "unit":
+        return "text";
+      case "article_no":
+        return "text";
       case "price":
+        return "number";
       case "in_stock":
         return "number";
       case "description":
         return "textarea";
       default:
-        return "text";
+        return "arrow";
     }
   };
 
@@ -203,7 +200,7 @@ function App() {
       setVisibleColumns(colsToShow);
     };
 
-    handleResize(); 
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -272,7 +269,6 @@ function App() {
                 placeholder="Article No"
                 value={newProduct.article_no}
                 onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
                 required
               />
               <input
@@ -282,7 +278,6 @@ function App() {
                 placeholder="Product Name"
                 value={newProduct.product_name}
                 onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
                 required
               />
               <input
@@ -292,7 +287,6 @@ function App() {
                 placeholder="In Price"
                 value={newProduct.in_price}
                 onChange={handleInputChange}
-                step="0.01"
                 required
               />
               <input
@@ -302,7 +296,6 @@ function App() {
                 placeholder="Price"
                 value={newProduct.price}
                 onChange={handleInputChange}
-                step="0.01"
                 required
               />
               <input
@@ -349,6 +342,8 @@ function App() {
             <table>
               <thead>
                 <tr>
+                  <th className="th-arrow">aa</th>{" "}
+                  {/* Empty header for arrow column */}
                   {visibleColumns.map((col) => (
                     <th key={col}>
                       {col.charAt(0).toUpperCase() +
@@ -361,39 +356,35 @@ function App() {
               <tbody>
                 {filteredItems.map((row, rowIndex) => (
                   <tr key={row.id}>
+                    <td></td> {/* Empty cell for arrow */}
                     {visibleColumns.map((col) => (
                       <td
                         key={col}
-                        onClick={() =>
-                          handleCellClick(rowIndex, mapColumnNames[col])
-                        }
+                        onClick={() => handleCellClick(rowIndex, col)}
                       >
                         {editCell.rowIndex === rowIndex &&
-                        editCell.column === mapColumnNames[col] ? (
+                        editCell.column === col ? (
                           getInputType(col) === "textarea" ? (
-                            <textarea
-                              className="edit-input"
-                              value={items[rowIndex][mapColumnNames[col]] || ""}
+                            <input
+                              className="edit-input-textarea"
+                              value={items[rowIndex][col] || ""}
                               onChange={(e) =>
-                                handleCellChange(
-                                  e,
-                                  rowIndex,
-                                  mapColumnNames[col]
-                                )
+                                handleCellChange(e, rowIndex, col)
                               }
                               onBlur={(e) =>
-                                handleBlurOrEnter(
-                                  e,
-                                  rowIndex,
-                                  mapColumnNames[col]
-                                )
+                                handleBlurOrEnter(e, rowIndex, col)
                               }
-                              onKeyPress={(e) =>
-                                handleBlurOrEnter(
-                                  e,
-                                  rowIndex,
-                                  mapColumnNames[col]
-                                )
+                              autoFocus
+                            />
+                          ) : getInputType(col) === "arrow" ? (
+                            <input
+                              className="edit-input-arrow"
+                              value={items[rowIndex][col] || ""}
+                              onChange={(e) =>
+                                handleCellChange(e, rowIndex, col)
+                              }
+                              onBlur={(e) =>
+                                handleBlurOrEnter(e, rowIndex, col)
                               }
                               autoFocus
                             />
@@ -401,43 +392,22 @@ function App() {
                             <input
                               className="edit-input"
                               type={getInputType(col)}
-                              value={items[rowIndex][mapColumnNames[col]] || ""}
+                              value={items[rowIndex][col] || ""}
                               onChange={(e) =>
-                                handleCellChange(
-                                  e,
-                                  rowIndex,
-                                  mapColumnNames[col]
-                                )
+                                handleCellChange(e, rowIndex, col)
                               }
                               onBlur={(e) =>
-                                handleBlurOrEnter(
-                                  e,
-                                  rowIndex,
-                                  mapColumnNames[col]
-                                )
-                              }
-                              onKeyPress={(e) =>
-                                handleBlurOrEnter(
-                                  e,
-                                  rowIndex,
-                                  mapColumnNames[col]
-                                )
-                              }
-                              step={
-                                col === "in_price" || col === "price"
-                                  ? "0.01"
-                                  : undefined
+                                handleBlurOrEnter(e, rowIndex, col)
                               }
                               autoFocus
                             />
                           )
                         ) : (
-                          row[col]
+                          row[col] || ""
                         )}
                       </td>
                     ))}
                     {visibleColumns.length < 7 && (
-
                       <td className="show-row-btn-cell">
                         <button
                           className="show-row-btn"
